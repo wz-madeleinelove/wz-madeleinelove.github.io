@@ -1,0 +1,37 @@
+.qr-modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-modal {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+}
+
+.qr-close {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  width: auto;
+  min-width: 0;
+  padding: 0;
+}
+
+.qr-desc {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #333;
+}

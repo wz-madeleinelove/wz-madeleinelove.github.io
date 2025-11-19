@@ -1,0 +1,37 @@
+.shipping-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.shipping-modal.list {
+  width: 80vw
+}
+
+.shipping-modal.list .admin-header h1 {
+  color: #ffffff;
+}
+
+.shipping-modal.list .table-scroll {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.shipping-modal h2 {
+  font-size: 2rem;
+  color: #ffffff
+}
+
+.shipping-form-buttons {
+  margin-top: 1rem;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
