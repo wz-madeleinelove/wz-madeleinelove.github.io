@@ -154,6 +154,7 @@ tbody tr:hover {
     display: inline-flex;
     align-items: center;
     margin-right: 1rem;
+    font-size: 1.1rem;
 }
 
 .admin-footer {
@@ -204,9 +205,6 @@ tbody tr:hover {
     .admin h1 span {
         margin-top: 0.5rem
     }
-
-    ;
-
 }
 
 @media screen and (max-width: 960px) {
@@ -225,7 +223,6 @@ tbody tr:hover {
         justify-content: flex-start;
     }
 }
-
 
 .theme-label {
     display: flex;
@@ -265,4 +262,59 @@ tbody tr:hover {
   border-color: #000000;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
   opacity: 1;
+}
+
+/* ✅ 공통 라디오 그룹 (결과표시, 운영모드 둘 다 사용) */
+.radio-group,
+.mode-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+/* 운영 모드 섹션 심플 강조 */
+.admin-mode-simple {
+    margin-top: 1rem; /* 🔹 운영 모드 wrapper 여백 */
+}
+
+.admin-mode-simple h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mode-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid #ddd;
+}
+
+.mode-pill.live {
+    background-color: #f5faff;
+    color: #420d41;
+}
+
+.mode-pill.test {
+    background-color: #fff4f2;
+    color: #d4380d;
+}
+
+/* 기존 mode-radio-group은 radio-group와 동일 스타일 사용
+   (위에서 같이 선언했으니 여기서는 생략 가능) */
+
+.mode-hint {
+    margin-top: 0.4rem;
+    font-size: 1rem;
+    color: #777;
+}
+
+.mode-warning-text {
+    margin-top: 0.2rem;
+    font-size: 1rem;
+    color: #d4380d;
 }

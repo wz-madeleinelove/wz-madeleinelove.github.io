@@ -1,3 +1,4 @@
+// src/components/AdminPage.jsx
 import React, { useEffect, useState } from 'react';
 import useDrawStore from '../store/useDrawStore';
 import { useNavigate } from 'react-router-dom';
@@ -13,12 +14,14 @@ function AdminPage() {
         displayMode,
         isLocked,
         isClosed,
+        isTestMode,      // 리허설 모드
         addPrize,
         updatePrize,
         deletePrize,
         setDisplayMode,
         setLocked,
         setClosed,
+        setTestMode,     // 리허설 모드 setter
         saveToFirebase,
         loadFromFirebase,
         listenToFirebase,
@@ -27,7 +30,7 @@ function AdminPage() {
     const [showModal, setShowModal] = useState(false);
     const isAdmin = useAuthStore((s) => s.isAdmin);
     const navigate = useNavigate();
-    const MAX_PRIZES = 15; // 필요 개수로 변경
+    const MAX_PRIZES = 100; // 필요 개수로 변경
 
     useEffect(() => {
         if (!isAdmin) {
@@ -37,31 +40,37 @@ function AdminPage() {
     }, [isAdmin, navigate]);
 
     useEffect(() => {
-    // 초기 로드
-    loadFromFirebase();
+        // 초기 로드
+        loadFromFirebase();
 
-    // 실시간 구독 시작 (언서브 함수가 반환되면 클린업에서 해제)
-    const unsub = typeof listenToFirebase === 'function' ? listenToFirebase() : undefined;
+        // 실시간 구독
+        const unsub =
+            typeof listenToFirebase === 'function' ? listenToFirebase() : undefined;
 
-    return () => {
-        if (typeof unsub === 'function') unsub();
-    };
-    }, [loadFromFirebase, listenToFirebase]); // ✅ 누락된 deps 추가
+        return () => {
+            if (typeof unsub === 'function') unsub();
+        };
+    }, [loadFromFirebase, listenToFirebase]);
 
     const logout = useAuthStore((s) => s.logout);
 
     const handleLogout = () => {
-        logout();           // Zustand 상태 초기화 및 localStorage 제거
-        navigate('/#/admin-login');      // 홈 또는 로그인 페이지로 이동
+        logout(); // Zustand 상태 초기화 및 localStorage 제거
+        navigate('/luckydrawsample/#/admin-login'); // 홈 또는 로그인 페이지로 이동
     };
 
     const totalQuantity = prizes.reduce((sum, p) => sum + (p.quantity || 0), 0);
     const totalRemaining = prizes.reduce((sum, p) => sum + (p.remaining || 0), 0);
 
     return (
-        <div className='admin'>
+        <div className="admin">
             <div className="admin-header">
-                <h1>관리자 페이지 <span>※ 상품 추가/삭제 및 결과 표시 방식 변경 후에는 ‘저장하기’를 눌러야 반영됩니다.</span></h1>
+                <h1>
+                    관리자 페이지{' '}
+                    <span>
+                        ※ 상품 추가/삭제 및 결과 표시 방식, 운영 모드 변경 후에는 ‘저장하기’를 눌러야 반영됩니다.
+                    </span>
+                </h1>
                 <div className="admin-status">
                     <button
                         className="btn-white btn-icon"
@@ -76,10 +85,12 @@ function AdminPage() {
                         로그아웃
                     </button>
                     <button
-                        className='btn-red'
+                        className="btn-red"
                         onClick={async () => {
                             const result = await Swal.fire({
-                                title: isClosed ? '럭키드로우를 다시 여시겠습니까?' : '정말로 지금 마감하시겠습니까?',
+                                title: isClosed
+                                    ? '럭키드로우를 다시 여시겠습니까?'
+                                    : '정말로 지금 마감하시겠습니까?',
                                 showCancelButton: true,
                                 confirmButtonText: isClosed ? '다시 열기' : '마감하기',
                                 cancelButtonText: '취소',
@@ -104,6 +115,7 @@ function AdminPage() {
                     </button>
                 </div>
             </div>
+
             <div className="admin-table">
                 <table border="1" cellPadding="8">
                     <thead>
@@ -125,7 +137,9 @@ function AdminPage() {
                                         type="text"
                                         value={prize.name}
                                         disabled={isLocked}
-                                        onChange={(e) => updatePrize(index, { name: e.target.value })}
+                                        onChange={(e) =>
+                                            updatePrize(index, { name: e.target.value })
+                                        }
                                     />
                                 </td>
                                 <td>
@@ -145,7 +159,7 @@ function AdminPage() {
                                 <td>{prize.remaining}</td>
                                 <td>
                                     <button
-                                        className='delete-prize'
+                                        className="delete-prize"
                                         onClick={async () => {
                                             const result = await Swal.fire({
                                                 title: `${prize.rank}등 상품 "${prize.name}"을 삭제하시겠습니까?`,
@@ -173,7 +187,11 @@ function AdminPage() {
                                         type="checkbox"
                                         checked={prize.requiresShipping || false}
                                         disabled={isLocked}
-                                        onChange={(e) => updatePrize(index, { requiresShipping: e.target.checked })}
+                                        onChange={(e) =>
+                                            updatePrize(index, {
+                                                requiresShipping: e.target.checked,
+                                            })
+                                        }
                                     />
                                 </td>
                             </tr>
@@ -181,11 +199,19 @@ function AdminPage() {
                     </tbody>
                 </table>
             </div>
+
             <div className="admin-btn-wrapper">
-                <button className='lock-prize btn-white' onClick={() => setLocked(!isLocked)}>
+                <button
+                    className="lock-prize btn-white"
+                    onClick={() => setLocked(!isLocked)}
+                >
                     {isLocked ? '잠금해제' : '설정잠금'}
                 </button>
-                <button className='add-prize btn-white' onClick={addPrize} disabled={isLocked || prizes.length >= MAX_PRIZES}>
+                <button
+                    className="add-prize btn-white"
+                    onClick={addPrize}
+                    disabled={isLocked || prizes.length >= MAX_PRIZES}
+                >
                     상품추가
                 </button>
                 <div className="admin-summary">
@@ -193,41 +219,95 @@ function AdminPage() {
                     <strong>남은 수량:</strong> {totalRemaining}개
                 </div>
             </div>
-            <div className='admin-wrapper'>
+
+            {/* 결과 표시 방식 */}
+            <div className="admin-wrapper">
                 <div className="admin-row">
                     <h2>결과 표시 방식</h2>
-                    <label>
-                        <input
-                            type="radio"
-                            value="rank"
-                            checked={displayMode === 'rank'}
-                            disabled={isLocked}
-                            onChange={(e) => setDisplayMode(e.target.value)}
-                        /> 등수만
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="prize"
-                            checked={displayMode === 'prize'}
-                            disabled={isLocked}
-                            onChange={(e) => setDisplayMode(e.target.value)}
-                        /> 상품명만
-                    </label>
-                    <label>
-                        <input
-                            type="radio"
-                            value="both"
-                            checked={displayMode === 'both'}
-                            disabled={isLocked}
-                            onChange={(e) => setDisplayMode(e.target.value)}
-                        /> 둘 다
-                    </label>
+                    <div className="radio-group">
+                        <label>
+                            <input
+                                type="radio"
+                                value="rank"
+                                checked={displayMode === 'rank'}
+                                disabled={isLocked}
+                                onChange={(e) => setDisplayMode(e.target.value)}
+                            />{' '}
+                            등수만
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                value="prize"
+                                checked={displayMode === 'prize'}
+                                disabled={isLocked}
+                                onChange={(e) => setDisplayMode(e.target.value)}
+                            />{' '}
+                            상품명만
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                value="both"
+                                checked={displayMode === 'both'}
+                                disabled={isLocked}
+                                onChange={(e) => setDisplayMode(e.target.value)}
+                            />{' '}
+                            둘 다
+                        </label>
+                    </div>
                 </div>
             </div>
+
+            {/* 🔹 운영 모드 - 심플 강조 버전 */}
+            <div className="admin-wrapper admin-mode-simple">
+                <div className="admin-row">
+                    <h2>
+                        운영 모드{' '}
+                        <span className={`mode-pill ${isTestMode ? 'test' : 'live'}`}>
+                            {isTestMode ? '리허설 모드' : '실제 운영 모드'}
+                        </span>
+                    </h2>
+                    <div className="mode-radio-group">
+                        <label>
+                            <input
+                                type="radio"
+                                value="live"
+                                checked={!isTestMode}
+                                disabled={isLocked}
+                                onChange={() => setTestMode(false)}
+                            />{' '}
+                            실제 운영 모드
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                value="test"
+                                checked={isTestMode}
+                                disabled={isLocked}
+                                onChange={() => setTestMode(true)}
+                            />{' '}
+                            리허설 모드
+                        </label>
+                    </div>
+
+                    <p className="mode-hint">
+                        리허설 모드에서는 추첨 결과가 재고에 반영되지 않고, 실제 운영 모드에서는
+                        추첨 결과가 바로 재고에 반영됩니다.
+                    </p>
+
+                    {isTestMode && (
+                        <p className="mode-warning-text">
+                            ※ 현재 <strong>리허설 모드</strong>입니다. 이 상태에서는 추첨을 해도
+                            실제 재고는 차감되지 않습니다.
+                        </p>
+                    )}
+                </div>
+            </div>
+
             <div className="admin-footer">
                 <button
-                    className='btn-mint'
+                    className="btn-mint"
                     onClick={async () => {
                         const result = await Swal.fire({
                             title: '저장하시겠습니까?',
@@ -249,7 +329,11 @@ function AdminPage() {
                     저장하기
                 </button>
             </div>
-            <ShippingListModal isOpen={showModal} onClose={() => setShowModal(false)} />
+
+            <ShippingListModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+            />
         </div>
     );
 }

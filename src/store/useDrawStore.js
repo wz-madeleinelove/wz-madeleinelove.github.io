@@ -1,15 +1,7 @@
-import {
-    create
-} from 'zustand';
-import {
-    doc,
-    getDoc,
-    setDoc,
-    onSnapshot
-} from 'firebase/firestore';
-import {
-    db
-} from '../firebase/firebaseConfig';
+// src/store/useDrawStore.js
+import { create } from 'zustand';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
 
 const PRIZE_DOC = doc(db, 'settings', 'prizes');
 const MAX_PRIZES = 100; // 필요 개수로 변경
@@ -19,24 +11,16 @@ const useDrawStore = create((set, get) => ({
     displayMode: 'both',
     isLocked: false,
     isClosed: false,
-    noticeMessage: '', // ✅ 안내문구 상태 추가
+    noticeMessage: '', // 안내문구 상태
     themeColor: 'gradient1',
+    isTestMode: false, // 🔹 리허설 모드
 
-    setClosed: (value) => set({
-        isClosed: value
-    }),
-    setLocked: (locked) => set({
-        isLocked: locked
-    }),
-    setDisplayMode: (mode) => set({
-        displayMode: mode
-    }),
-    setNoticeMessage: (msg) => set({
-        noticeMessage: msg
-    }), // ✅ 안내문구 setter 추가
-    setThemeColor: (colorName) => set({
-        themeColor: colorName
-    }),
+    setClosed: (value) => set({ isClosed: value }),
+    setLocked: (locked) => set({ isLocked: locked }),
+    setDisplayMode: (mode) => set({ displayMode: mode }),
+    setNoticeMessage: (msg) => set({ noticeMessage: msg }),
+    setThemeColor: (colorName) => set({ themeColor: colorName }),
+    setTestMode: (value) => set({ isTestMode: value }), // 🔹 리허설 모드 setter
 
     loadFromFirebase: async () => {
         const snap = await getDoc(PRIZE_DOC);
@@ -44,7 +28,7 @@ const useDrawStore = create((set, get) => ({
             const data = snap.data();
             const prizesWithDefaults = (data.prizes || []).map((p) => ({
                 ...p,
-                requiresShipping: p.requiresShipping ?? false, // ✅ 오류 수정 (??)
+                requiresShipping: p.requiresShipping ?? false,
             }));
 
             set({
@@ -52,19 +36,21 @@ const useDrawStore = create((set, get) => ({
                 displayMode: data.displayMode || 'both',
                 isLocked: data.isLocked || false,
                 isClosed: data.isClosed || false,
-                noticeMessage: data.noticeMessage || '', // ✅ 안내문구 로드
+                noticeMessage: data.noticeMessage || '',
                 themeColor: data.themeColor || 'gradient1',
+                isTestMode: data.isTestMode ?? false, // 🔹 리허설 모드 로드
             });
         }
     },
 
     listenToFirebase: () => {
-        onSnapshot(PRIZE_DOC, (snap) => {
+        // onSnapshot의 반환값(언서브 함수)을 리턴해야 useEffect 클린업에서 사용할 수 있음
+        return onSnapshot(PRIZE_DOC, (snap) => {
             if (snap.exists()) {
                 const data = snap.data();
                 const prizesWithDefaults = (data.prizes || []).map((p) => ({
                     ...p,
-                    requiresShipping: p.requiresShipping ?? false, // ✅ 오류 수정 (??)
+                    requiresShipping: p.requiresShipping ?? false,
                 }));
 
                 set({
@@ -72,8 +58,9 @@ const useDrawStore = create((set, get) => ({
                     displayMode: data.displayMode || 'both',
                     isLocked: data.isLocked || false,
                     isClosed: data.isClosed || false,
-                    noticeMessage: data.noticeMessage || '', // ✅ 안내문구 실시간 반영
+                    noticeMessage: data.noticeMessage || '',
                     themeColor: data.themeColor || 'gradient1',
+                    isTestMode: data.isTestMode ?? false, // 🔹 실시간 반영
                 });
             }
         });
@@ -85,8 +72,9 @@ const useDrawStore = create((set, get) => ({
             displayMode,
             isLocked,
             isClosed,
-            noticeMessage, // ✅ 안내문구 포함
-            themeColor
+            noticeMessage,
+            themeColor,
+            isTestMode, // 🔹 저장
         } = get();
 
         await setDoc(PRIZE_DOC, {
@@ -94,8 +82,9 @@ const useDrawStore = create((set, get) => ({
             displayMode,
             isLocked,
             isClosed,
-            noticeMessage, // ✅ Firestore에 저장
-            themeColor
+            noticeMessage,
+            themeColor,
+            isTestMode, // 🔹 Firestore에 저장
         });
     },
 
@@ -106,9 +95,7 @@ const useDrawStore = create((set, get) => ({
                 ...newPrizes[index],
                 ...updated,
             };
-            return {
-                prizes: newPrizes
-            };
+            return { prizes: newPrizes };
         }),
 
     addPrize: () =>
@@ -134,9 +121,7 @@ const useDrawStore = create((set, get) => ({
             const updated = [...state.prizes];
             updated.splice(index, 1);
             updated.forEach((p, i) => (p.rank = i + 1));
-            return {
-                prizes: updated
-            };
+            return { prizes: updated };
         }),
 }));
 

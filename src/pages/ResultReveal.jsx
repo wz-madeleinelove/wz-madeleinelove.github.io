@@ -1,19 +1,17 @@
+// ResultReveal.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import Confetti from 'react-confetti';
 import useDrawStore from '../store/useDrawStore';
 import ShippingFormModal from './ShippingFormModal';
 
-
-function ResultReveal({ results, onFinish }) {
+function ResultReveal({ results, onFinish, onHighRankReveal }) {
     // eslint-disable-next-line
-    const { displayMode,themeColor  } = useDrawStore();
+    const { displayMode, themeColor } = useDrawStore();
     const [revealed, setRevealed] = useState([]);
     // eslint-disable-next-line
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [showConfetti, setShowConfetti] = useState(false);
     const [showSummary, setShowSummary] = useState(false);
     const [showShippingModal, setShowShippingModal] = useState(false);
-    const HIGH_COLOR = '#ff8077'; // 원하는 컬러
+    const HIGH_COLOR = '#420d41'; // 원하는 컬러
 
     const isHighRank = (item) => item.rank === 1 || item.rank === 2;
 
@@ -40,13 +38,15 @@ function ResultReveal({ results, onFinish }) {
         const item = results[index];
 
         if (isHighRank(item)) {
-            setShowConfetti(true); // ❗️ 끄지 않음!
+            if (onHighRankReveal) {
+                onHighRankReveal();
+            }
         }
 
         setTimeout(() => {
             setRevealed((prev) => [...prev, index]);
         }, isHighRank(item) ? 500 : 0);
-    }, [results]);
+    }, [results, onHighRankReveal]);
 
     const handleShowSummary = () => {
         setShowSummary(true);
@@ -63,20 +63,11 @@ function ResultReveal({ results, onFinish }) {
     }, [currentIndex, results, handleReveal]);
 
     const handleFinish = () => {
-        setShowConfetti(false); // ✅ 이 시점에만 컨페티 끔
-        onFinish();             // 외부 종료 콜백 호출
+        onFinish();
     };
 
     return (
         <div className="draw-contents">
-            {showConfetti && (
-                <Confetti
-                    className="no-capture confetti-canvas"
-                    numberOfPieces={120}
-                    gravity={0.3}
-                />
-            )}
-
             {!showSummary ? (
                 <div>
                     <h2>당첨 결과</h2>
@@ -86,11 +77,11 @@ function ResultReveal({ results, onFinish }) {
                             const isRevealed = revealed.includes(i);
                             return (
                                 <li
-                                key={i}
-                                className={`fade-in rank-${r.rank} ${isHigh ? 'high high-bg' : ''}`}
-                                data-rank={r.rank}
-                                data-label={renderLabel(r)}
-                                style={{ '--fade-index': i, '--high-bg': isHigh ? HIGH_COLOR : undefined }}
+                                    key={i}
+                                    className={`fade-in rank-${r.rank} ${isHigh ? 'high high-bg' : ''}`}
+                                    data-rank={r.rank}
+                                    data-label={renderLabel(r)}
+                                    style={{ '--fade-index': i, '--high-bg': isHigh ? HIGH_COLOR : undefined }}
                                 >
                                     {isHigh && !isRevealed ? (
                                         <div className="pulse" onClick={() => handleReveal(i)}>
