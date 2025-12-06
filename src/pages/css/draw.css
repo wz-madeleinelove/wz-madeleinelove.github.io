@@ -14,6 +14,10 @@
     background-size: cover;
 }
 
+@media screen and (orientation: landscape) {
+    .draw {background-image: url(./img/bg-land.jpg);}
+}
+
 .draw-contents {
     display: flex;
     flex-direction: column;
