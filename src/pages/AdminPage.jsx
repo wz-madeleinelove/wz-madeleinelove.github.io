@@ -56,7 +56,7 @@ function AdminPage() {
 
     const handleLogout = () => {
         logout(); // Zustand 상태 초기화 및 localStorage 제거
-        navigate('/luckydrawsample/#/admin-login'); // 홈 또는 로그인 페이지로 이동
+        navigate('/#/admin-login'); // 홈 또는 로그인 페이지로 이동
     };
 
     const totalQuantity = prizes.reduce((sum, p) => sum + (p.quantity || 0), 0);

@@ -25,7 +25,7 @@
     "xlsx": "^0.18.5",
     "zustand": "^5.0.6"
   },
-  "homepage": "https://chanchan1004.github.io/",
+  "homepage": "https://wz-madeleinelove.github.io/",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
